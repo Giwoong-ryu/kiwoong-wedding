@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(tree:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm install:*)",
+      "WebFetch(domain:vividvows.co.kr)",
+      "Bash(git init:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: 개인화 초대 메시지 기능 추가\n\n- URL 파라미터로 게스트 이름 전달 가능 \\(?guest=이름\\)\n- 초대 메시지 개인화 \\(\"{이름}님을 초대합니다\"\\)\n- RSVP 폼에 이름 자동 채우기\n- README 및 환경변수 예제 추가\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}

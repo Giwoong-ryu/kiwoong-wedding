@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* SOFT_SAGE 테마 폰트 로드 */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bgMain text-text;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-noto-serif-kr), serif;
+  }
+}
+
+@layer components {
+  /* 어르신 모드 - SOFT_SAGE 디자인 시스템 기준 */
+  .senior-mode {
+    @apply text-2xl leading-relaxed tracking-wide font-semibold;
+  }
+
+  .senior-mode h1 {
+    @apply text-5xl font-black leading-tight;
+  }
+
+  .senior-mode h2 {
+    @apply text-4xl font-black leading-tight;
+  }
+
+  .senior-mode button {
+    @apply py-5 px-10 text-2xl font-bold;
+  }
+
+  .senior-mode p {
+    @apply text-2xl leading-relaxed tracking-wide;
+  }
+
+  /* 기본 버튼 스타일 */
+  .btn-primary {
+    @apply bg-primary text-white px-6 py-3 rounded-lg font-medium
+           hover:bg-primary/90 transition-colors duration-200;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-white px-6 py-3 rounded-lg font-medium
+           hover:bg-secondary/90 transition-colors duration-200;
+  }
+
+  /* 섹션 공통 스타일 - SOFT_SAGE 디자인 시스템 */
+  .section {
+    @apply relative py-20 px-6 overflow-hidden transition-all duration-700;
+  }
+
+  .section-content {
+    @apply max-w-md mx-auto animate-fade-in-up;
+  }
+
+  .section-title {
+    @apply text-3xl md:text-4xl font-extrabold tracking-tight text-center mb-8 text-text;
+    font-family: var(--font-noto-serif-kr), serif;
+  }
+}
+
+@layer utilities {
+  /* 텍스트 그라데이션 */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
+  }
+
+  /* 폰트 패밀리 유틸리티 */
+  .font-cormorant {
+    font-family: var(--font-cormorant), serif;
+  }
+
+  .font-noto-serif {
+    font-family: var(--font-noto-serif-kr), serif;
+  }
+}

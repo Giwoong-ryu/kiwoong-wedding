@@ -1,0 +1,7 @@
+{
+  "name": "Festival Wedding Invite 2026",
+  "description": "A modern, trendy mobile wedding invitation designed for small weddings with a 'festival' concept, featuring senior mode and no-gift notice.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
