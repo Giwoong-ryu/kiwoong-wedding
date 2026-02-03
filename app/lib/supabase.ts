@@ -1,9 +1,18 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// 빌드 시 환경 변수가 없어도 빌드 실패하지 않도록 처리
+let supabase: SupabaseClient;
+if (supabaseUrl && supabaseAnonKey) {
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
+} else {
+  // 빌드 시 placeholder (런타임에는 환경 변수 필요)
+  supabase = createClient('https://placeholder.supabase.co', 'placeholder-key');
+}
+
+export { supabase };
 
 // RSVP 테이블 타입
 export interface RSVP {
