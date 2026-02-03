@@ -1,34 +1,30 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Lazy initialization - 런타임에만 실행
+let _supabase: SupabaseClient | null = null;
 
-// 빌드 시점에 환경 변수가 없으면 더미 클라이언트 생성
-// 런타임에서만 실제 Supabase 사용
-function createSupabaseClient(): SupabaseClient {
-  if (supabaseUrl && supabaseAnonKey) {
-    return createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_, prop) {
+    if (!_supabase) {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      if (url && key) {
+        _supabase = createClient(url, key);
+      } else {
+        // 빌드 시점용 더미 반환
+        return () => ({
+          select: () => ({ order: () => Promise.resolve({ data: [], error: null }) }),
+          insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
+          delete: () => ({ eq: () => Promise.resolve({ error: null }) }),
+          on: () => ({ subscribe: () => ({}) }),
+          upload: () => Promise.resolve({ data: null, error: null }),
+          getPublicUrl: () => ({ data: { publicUrl: '' } }),
+        });
+      }
+    }
+    return (_supabase as any)[prop];
   }
-  // 빌드 시점용 더미 (실제 요청은 실패하지만 빌드는 통과)
-  return {
-    from: () => ({
-      select: () => ({ order: () => Promise.resolve({ data: [], error: null }) }),
-      insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
-      delete: () => ({ eq: () => Promise.resolve({ error: null }) }),
-    }),
-    storage: {
-      from: () => ({
-        upload: () => Promise.resolve({ data: null, error: null }),
-        getPublicUrl: () => ({ data: { publicUrl: '' } }),
-      }),
-    },
-    channel: () => ({
-      on: () => ({ subscribe: () => ({}) }),
-    }),
-  } as unknown as SupabaseClient;
-}
-
-export const supabase = createSupabaseClient();
+});
 
 // RSVP 테이블 타입
 export interface RSVP {
