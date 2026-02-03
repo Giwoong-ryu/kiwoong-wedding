@@ -1,12 +1,18 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+// 서버 빌드 시점에는 실행 안 함, 클라이언트에서만 실행
+let supabase: SupabaseClient;
 
-// 환경 변수가 있을 때만 클라이언트 생성
-export const supabase: SupabaseClient = supabaseUrl && supabaseAnonKey
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : (null as unknown as SupabaseClient);
+if (typeof window !== 'undefined') {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+
+  if (supabaseUrl && supabaseAnonKey) {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+  }
+}
+
+export { supabase };
 
 // RSVP 테이블 타입
 export interface RSVP {
