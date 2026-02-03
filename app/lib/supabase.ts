@@ -1,18 +1,34 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// 서버 빌드 시점에는 실행 안 함, 클라이언트에서만 실행
-let supabase: SupabaseClient;
+// 지연 초기화를 위한 싱글톤 패턴
+let supabaseInstance: SupabaseClient | null = null;
 
-if (typeof window !== 'undefined') {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-
-  if (supabaseUrl && supabaseAnonKey) {
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
+function getSupabase(): SupabaseClient | null {
+  // 서버 사이드에서는 null 반환
+  if (typeof window === 'undefined') {
+    return null;
   }
+
+  // 이미 초기화된 경우 재사용
+  if (supabaseInstance) {
+    return supabaseInstance;
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // 환경변수가 없으면 null 반환
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('Supabase 환경변수가 설정되지 않았습니다.');
+    return null;
+  }
+
+  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey);
+  return supabaseInstance;
 }
 
-export { supabase };
+// 하위 호환성을 위한 export (사용하지 않는 것 권장)
+export const supabase = null as unknown as SupabaseClient;
 
 // RSVP 테이블 타입
 export interface RSVP {
@@ -27,10 +43,11 @@ export interface RSVP {
 
 // RSVP 저장 함수
 export async function saveRSVP(data: Omit<RSVP, 'id' | 'created_at'>) {
-  if (!supabase) {
+  const client = getSupabase();
+  if (!client) {
     throw new Error('Supabase client not initialized');
   }
-  const { data: result, error } = await supabase
+  const { data: result, error } = await client
     .from('rsvps')
     .insert([data])
     .select()
@@ -46,10 +63,11 @@ export async function saveRSVP(data: Omit<RSVP, 'id' | 'created_at'>) {
 
 // RSVP 목록 조회
 export async function getRSVPs() {
-  if (!supabase) {
+  const client = getSupabase();
+  if (!client) {
     return [];
   }
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('rsvps')
     .select('*')
     .order('created_at', { ascending: false });
@@ -73,7 +91,8 @@ export interface Photo {
 
 // 사진 업로드 (Storage + DB)
 export async function uploadPhoto(file: File, uploaderName?: string) {
-  if (!supabase) {
+  const client = getSupabase();
+  if (!client) {
     throw new Error('Supabase client not initialized');
   }
   // 1. Storage에 파일 업로드
@@ -81,7 +100,7 @@ export async function uploadPhoto(file: File, uploaderName?: string) {
   const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
   const filePath = `wedding-photos/${fileName}`;
 
-  const { data: uploadData, error: uploadError } = await supabase.storage
+  const { data: uploadData, error: uploadError } = await client.storage
     .from('photos')
     .upload(filePath, file, {
       cacheControl: '3600',
@@ -94,12 +113,12 @@ export async function uploadPhoto(file: File, uploaderName?: string) {
   }
 
   // 2. Public URL 가져오기
-  const { data: { publicUrl } } = supabase.storage
+  const { data: { publicUrl } } = client.storage
     .from('photos')
     .getPublicUrl(filePath);
 
   // 3. DB에 메타데이터 저장
-  const { data: photoData, error: dbError } = await supabase
+  const { data: photoData, error: dbError } = await client
     .from('photos')
     .insert([{
       file_path: filePath,
@@ -119,10 +138,11 @@ export async function uploadPhoto(file: File, uploaderName?: string) {
 
 // 사진 목록 조회
 export async function getPhotos() {
-  if (!supabase) {
+  const client = getSupabase();
+  if (!client) {
     return [];
   }
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('photos')
     .select('*')
     .order('created_at', { ascending: false });
@@ -139,10 +159,11 @@ export async function getPhotos() {
 
 // 실시간 사진 구독
 export function subscribeToPhotos(callback: (photo: Photo) => void) {
-  if (!supabase) {
+  const client = getSupabase();
+  if (!client) {
     return null;
   }
-  return supabase
+  return client
     .channel('photos')
     .on(
       'postgres_changes',
@@ -165,10 +186,11 @@ export interface GuestbookEntry {
 
 // 방명록 작성
 export async function saveGuestbook(data: Omit<GuestbookEntry, 'id' | 'created_at'>) {
-  if (!supabase) {
+  const client = getSupabase();
+  if (!client) {
     throw new Error('Supabase client not initialized');
   }
-  const { data: result, error } = await supabase
+  const { data: result, error } = await client
     .from('guestbook')
     .insert([data])
     .select()
@@ -184,10 +206,11 @@ export async function saveGuestbook(data: Omit<GuestbookEntry, 'id' | 'created_a
 
 // 방명록 목록 조회
 export async function getGuestbook() {
-  if (!supabase) {
+  const client = getSupabase();
+  if (!client) {
     return [];
   }
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('guestbook')
     .select('id, name, message, created_at')
     .order('created_at', { ascending: false });
@@ -202,11 +225,12 @@ export async function getGuestbook() {
 
 // 방명록 삭제 (비밀번호 확인)
 export async function deleteGuestbook(id: number, password: string) {
-  if (!supabase) {
+  const client = getSupabase();
+  if (!client) {
     throw new Error('Supabase client not initialized');
   }
   // 먼저 비밀번호 확인
-  const { data: entry, error: fetchError } = await supabase
+  const { data: entry, error: fetchError } = await client
     .from('guestbook')
     .select('password')
     .eq('id', id)
@@ -221,7 +245,7 @@ export async function deleteGuestbook(id: number, password: string) {
   }
 
   // 비밀번호 일치하면 삭제
-  const { error: deleteError } = await supabase
+  const { error: deleteError } = await client
     .from('guestbook')
     .delete()
     .eq('id', id);
@@ -234,10 +258,11 @@ export async function deleteGuestbook(id: number, password: string) {
 
 // 실시간 방명록 구독
 export function subscribeToGuestbook(callback: (entry: GuestbookEntry) => void) {
-  if (!supabase) {
+  const client = getSupabase();
+  if (!client) {
     return null;
   }
-  return supabase
+  return client
     .channel('guestbook')
     .on(
       'postgres_changes',
@@ -262,10 +287,11 @@ export interface QnA {
 
 // Q&A 질문 작성
 export async function saveQuestion(data: { question: string; asker_name: string }) {
-  if (!supabase) {
+  const client = getSupabase();
+  if (!client) {
     throw new Error('Supabase client not initialized');
   }
-  const { data: result, error } = await supabase
+  const { data: result, error } = await client
     .from('qna')
     .insert([{
       ...data,
@@ -284,10 +310,11 @@ export async function saveQuestion(data: { question: string; asker_name: string 
 
 // 승인된 Q&A 목록 조회
 export async function getApprovedQnA() {
-  if (!supabase) {
+  const client = getSupabase();
+  if (!client) {
     return [];
   }
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('qna')
     .select('*')
     .eq('is_approved', true)
@@ -303,10 +330,11 @@ export async function getApprovedQnA() {
 
 // 실시간 Q&A 구독
 export function subscribeToQnA(callback: (qna: QnA) => void) {
-  if (!supabase) {
+  const client = getSupabase();
+  if (!client) {
     return null;
   }
-  return supabase
+  return client
     .channel('qna')
     .on(
       'postgres_changes',
