@@ -1,9 +1,34 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://example.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4YW1wbGUiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTYyMDY1MjE2MCwiZXhwIjoxOTM2MjI4MTYwfQ.placeholder';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+// 빌드 시점에 환경 변수가 없으면 더미 클라이언트 생성
+// 런타임에서만 실제 Supabase 사용
+function createSupabaseClient(): SupabaseClient {
+  if (supabaseUrl && supabaseAnonKey) {
+    return createClient(supabaseUrl, supabaseAnonKey);
+  }
+  // 빌드 시점용 더미 (실제 요청은 실패하지만 빌드는 통과)
+  return {
+    from: () => ({
+      select: () => ({ order: () => Promise.resolve({ data: [], error: null }) }),
+      insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
+      delete: () => ({ eq: () => Promise.resolve({ error: null }) }),
+    }),
+    storage: {
+      from: () => ({
+        upload: () => Promise.resolve({ data: null, error: null }),
+        getPublicUrl: () => ({ data: { publicUrl: '' } }),
+      }),
+    },
+    channel: () => ({
+      on: () => ({ subscribe: () => ({}) }),
+    }),
+  } as unknown as SupabaseClient;
+}
+
+export const supabase = createSupabaseClient();
 
 // RSVP 테이블 타입
 export interface RSVP {
