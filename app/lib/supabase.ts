@@ -1,30 +1,12 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Lazy initialization - 런타임에만 실행
-let _supabase: SupabaseClient | null = null;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-export const supabase = new Proxy({} as SupabaseClient, {
-  get(_, prop) {
-    if (!_supabase) {
-      const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      if (url && key) {
-        _supabase = createClient(url, key);
-      } else {
-        // 빌드 시점용 더미 반환
-        return () => ({
-          select: () => ({ order: () => Promise.resolve({ data: [], error: null }) }),
-          insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
-          delete: () => ({ eq: () => Promise.resolve({ error: null }) }),
-          on: () => ({ subscribe: () => ({}) }),
-          upload: () => Promise.resolve({ data: null, error: null }),
-          getPublicUrl: () => ({ data: { publicUrl: '' } }),
-        });
-      }
-    }
-    return (_supabase as any)[prop];
-  }
-});
+// 환경 변수가 있을 때만 클라이언트 생성
+export const supabase: SupabaseClient = supabaseUrl && supabaseAnonKey
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : (null as unknown as SupabaseClient);
 
 // RSVP 테이블 타입
 export interface RSVP {
