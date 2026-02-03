@@ -1,0 +1,15 @@
+# Wedding Photo Background Generator Dependencies
+# Install with: pip install -r requirements-wedding.txt
+
+# Background Removal
+rembg>=2.0.50
+
+# Image Processing
+Pillow>=10.0.0
+numpy>=1.24.0
+
+# Replicate API (Flux model)
+replicate>=0.25.0
+
+# Optional: GPU acceleration for rembg
+# onnxruntime-gpu>=1.16.0

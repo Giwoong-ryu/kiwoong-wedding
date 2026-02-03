@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
 import type { RSVP, GuestbookEntry } from '../lib/supabase';
 
-const ADMIN_PASSWORD = '10921902'; // 간단한 비밀번호
+const ADMIN_PASSWORD = '10921902';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -20,6 +19,9 @@ export default function AdminPage() {
   }, [isAuthenticated]);
 
   const loadData = async () => {
+    // 동적으로 supabase 가져오기 (빌드 시점 오류 방지)
+    const { supabase } = await import('../lib/supabase');
+
     // RSVP 데이터 로드
     const { data: rsvpData } = await supabase
       .from('rsvps')
