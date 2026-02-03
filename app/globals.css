@@ -75,8 +75,8 @@
   }
 
   /* 폰트 패밀리 유틸리티 */
-  .font-cormorant {
-    font-family: var(--font-cormorant), serif;
+  .font-great-vibes {
+    font-family: var(--font-great-vibes), cursive;
   }
 
   .font-noto-serif {

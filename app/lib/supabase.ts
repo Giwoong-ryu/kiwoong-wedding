@@ -212,3 +212,65 @@ export function subscribeToGuestbook(callback: (entry: GuestbookEntry) => void) 
     )
     .subscribe();
 }
+
+// Q&A 타입
+export interface QnA {
+  id?: number;
+  question: string;
+  asker_name: string;
+  groom_answer?: string;
+  bride_answer?: string;
+  is_approved: boolean;
+  created_at?: string;
+}
+
+// Q&A 질문 작성
+export async function saveQuestion(data: { question: string; asker_name: string }) {
+  const { data: result, error } = await supabase
+    .from('qna')
+    .insert([{
+      ...data,
+      is_approved: false
+    }])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('질문 저장 실패:', error);
+    throw error;
+  }
+
+  return result;
+}
+
+// 승인된 Q&A 목록 조회
+export async function getApprovedQnA() {
+  const { data, error } = await supabase
+    .from('qna')
+    .select('*')
+    .eq('is_approved', true)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Q&A 조회 실패:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+// 실시간 Q&A 구독
+export function subscribeToQnA(callback: (qna: QnA) => void) {
+  return supabase
+    .channel('qna')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'qna' },
+      (payload) => {
+        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          callback(payload.new as QnA);
+        }
+      }
+    )
+    .subscribe();
+}

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Noto_Serif_KR } from 'next/font/google';
+import { Great_Vibes, Noto_Serif_KR } from 'next/font/google';
 import "./globals.css";
 
-const cormorant = Cormorant_Garamond({
+const greatVibes = Great_Vibes({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-cormorant',
+  weight: ['400'],
+  variable: '--font-great-vibes',
   display: 'swap',
 });
 
@@ -17,18 +17,17 @@ const notoSerifKR = Noto_Serif_KR({
 });
 
 export const metadata: Metadata = {
-  title: "신랑 ♥ 신부 결혼합니다",
-  description: "우리만의 작은 축제에 초대합니다 - 2026년 6월 14일",
-  openGraph: {
-    title: "신랑 ♥ 신부 결혼합니다",
-    description: "우리만의 작은 축제에 초대합니다",
-    images: ["/hero-bg.jpg"], // 디자인 이미지 업로드 후 업데이트
+  metadataBase: new URL('https://wedding-invitation.vercel.app'),
+  title: "Kiwoong Gyeoul Wedding",
+  description: "March 28, 2026 Saturday 2PM at Lascos Wedding Hall",
+  icons: {
+    icon: '/icon.svg',
   },
-  // 카카오톡 공유 최적화
-  other: {
-    'kakao:title': "신랑 ♥ 신부 결혼합니다",
-    'kakao:description': "2026년 6월 14일 토요일 오후 2시",
-  }
+  openGraph: {
+    title: "Kiwoong Gyeoul Wedding",
+    description: "March 28, 2026 Saturday 2PM",
+    images: ["/main.jpg"],
+  },
 };
 
 export default function RootLayout({
@@ -38,7 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={`${cormorant.variable} ${notoSerifKR.variable} antialiased`}>
+      <body className={`${greatVibes.variable} ${notoSerifKR.variable} antialiased`}>
         {children}
       </body>
     </html>
