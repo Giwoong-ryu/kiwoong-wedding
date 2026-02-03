@@ -582,8 +582,17 @@ export default function Home() {
           {/* 꽃 모티프 */}
           <div className="mb-6 text-6xl opacity-20">✿</div>
 
-          <h2 className={`${t.h2} mb-10 text-4xl tracking-wide`} style={{ fontFamily: 'Noto Serif KR, serif', color: theme.primary }}>
-            {guestName ? `${guestName}님을 초대합니다` : '소중한 당신을 초대합니다'}
+          <h2 className={`${t.h2} mb-10 tracking-wide`} style={{ fontFamily: 'Noto Serif KR, serif', color: theme.primary }}>
+            {guestName ? (
+              <>
+                <span className="block text-5xl md:text-6xl font-semibold mb-2" style={{ color: theme.gold }}>
+                  {guestName}
+                </span>
+                <span className="text-3xl">님을 초대합니다</span>
+              </>
+            ) : (
+              <span className="text-4xl">소중한 당신을 초대합니다</span>
+            )}
           </h2>
 
           <div className={`${t.body} whitespace-pre-wrap leading-loose text-lg`} style={{ color: theme.textMuted }}>
