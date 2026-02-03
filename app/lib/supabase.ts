@@ -1,18 +1,9 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://example.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4YW1wbGUiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTYyMDY1MjE2MCwiZXhwIjoxOTM2MjI4MTYwfQ.placeholder';
 
-// 빌드 시 환경 변수가 없어도 빌드 실패하지 않도록 처리
-let supabase: SupabaseClient;
-if (supabaseUrl && supabaseAnonKey) {
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
-} else {
-  // 빌드 시 placeholder (런타임에는 환경 변수 필요)
-  supabase = createClient('https://placeholder.supabase.co', 'placeholder-key');
-}
-
-export { supabase };
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey);
 
 // RSVP 테이블 타입
 export interface RSVP {
